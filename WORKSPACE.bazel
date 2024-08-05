@@ -1,5 +1,6 @@
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+### PYTHON
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 # Update the SHA and VERSION to the lastest version available here:
 # https://github.com/bazelbuild/rules_python/releases.
@@ -37,3 +38,83 @@ pip_parse(
 
 load("@python_deps//:requirements.bzl", "install_deps")
 install_deps()
+
+
+### GO
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "io_bazel_rules_go",
+    integrity = "sha256-M6zErg9wUC20uJPJ/B3Xqb+ZjCPn/yxFF3QdQEmpdvg=",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.48.0/rules_go-v0.48.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.48.0/rules_go-v0.48.0.zip",
+    ],
+)
+
+http_archive(
+    name = "bazel_gazelle",
+    integrity = "sha256-12v3pg/YsFBEQJDfooN6Tq+YKeEWVhjuNdzspcvfWNU=",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.37.0/bazel-gazelle-v0.37.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.37.0/bazel-gazelle-v0.37.0.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "rules_pkg",
+    sha256 = "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
+    urls = [
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "build_bazel_rules_nodejs",
+    sha256 = "c29944ba9b0b430aadcaf3bf2570fece6fc5ebfb76df145c6cdad40d65c20811",
+    urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.7.0/rules_nodejs-5.7.0.tar.gz"],
+)
+
+http_archive(
+    name = "rules_oci",
+    sha256 = "176e601d21d1151efd88b6b027a24e782493c5d623d8c6211c7767f306d655c8",
+    strip_prefix = "rules_oci-1.2.0",
+    url = "https://github.com/bazel-contrib/rules_oci/releases/download/v1.2.0/rules_oci-v1.2.0.tar.gz",
+)
+
+http_archive(
+    name = "bazoku",
+    sha256 = "bb12e93d3319c670427decaa2240e1c2afc3e09ffd179bf4e11210313b9be6ba",
+    urls = ["https://github.com/salesforce/bazoku/releases/download/v0.2.0/bazoku-v0.2.0.tar.gz"],
+)
+
+
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("//:go_deps.bzl", "go_dependencies")
+
+############################################################
+# Define your own dependencies here using go_repository.
+# Else, dependencies declared by rules_go/gazelle will be used.
+# The first declaration of an external repository "wins".
+############################################################
+
+go_dependencies()
+
+# go_repository(
+#     name = "com_github_gorilla_mux",
+#     importpath = "github.com/gorilla/mux",
+#     tag = "v1.8.1",
+# )
+
+go_rules_dependencies()
+
+go_register_toolchains(version = "1.20.5")
+
+gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
+
+### Bazoku Setup
+load("@bazoku//tools:deps.bzl", "bazoku_deps")
+
+bazoku_deps()
