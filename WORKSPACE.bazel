@@ -1,3 +1,10 @@
+# Declares that this directory is the root of a Bazel workspace.
+# See https://docs.bazel.build/versions/main/build-ref.html#workspace
+workspace(
+    # How this workspace would be referenced with absolute labels from another workspace
+    name = "bazel-tutorial",
+)
+
 ### PYTHON
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
@@ -76,12 +83,14 @@ http_archive(
     urls = ["https://github.com/bazelbuild/rules_nodejs/releases/download/5.7.0/rules_nodejs-5.7.0.tar.gz"],
 )
 
-http_archive(
-    name = "rules_oci",
-    sha256 = "176e601d21d1151efd88b6b027a24e782493c5d623d8c6211c7767f306d655c8",
-    strip_prefix = "rules_oci-1.2.0",
-    url = "https://github.com/bazel-contrib/rules_oci/releases/download/v1.2.0/rules_oci-v1.2.0.tar.gz",
-)
+# http_archive(
+#     name = "rules_oci",
+#     sha256 = "176e601d21d1151efd88b6b027a24e782493c5d623d8c6211c7767f306d655c8",
+#     strip_prefix = "rules_oci-1.2.0",
+#     url = "https://github.com/bazel-contrib/rules_oci/releases/download/v1.2.0/rules_oci-v1.2.0.tar.gz",
+# )
+
+
 
 http_archive(
     name = "bazoku",
@@ -91,7 +100,7 @@ http_archive(
 
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 load("//:go_deps.bzl", "go_dependencies")
 
 ############################################################
@@ -102,11 +111,11 @@ load("//:go_deps.bzl", "go_dependencies")
 
 go_dependencies()
 
-# go_repository(
-#     name = "com_github_gorilla_mux",
-#     importpath = "github.com/gorilla/mux",
-#     tag = "v1.8.1",
-# )
+go_repository(
+    name = "com_github_gorilla_mux",
+    importpath = "github.com/gorilla/mux",
+    tag = "v1.8.1",
+)
 
 go_rules_dependencies()
 
@@ -118,3 +127,132 @@ gazelle_dependencies(go_repository_default_config = "//:WORKSPACE.bazel")
 load("@bazoku//tools:deps.bzl", "bazoku_deps")
 
 bazoku_deps()
+
+
+### NODE JS
+
+# http_archive(
+#     name = "aspect_rules_js",
+#     sha256 = "f8536470864c91f91c83aea91de9a27607ca5e6d8a9fcdd56132cf422c6b7b56",
+#     strip_prefix = "rules_js-2.0.0-rc9",
+#     url = "https://github.com/aspect-build/rules_js/releases/download/v2.0.0-rc9/rules_js-v2.0.0-rc9.tar.gz",
+# )
+
+
+http_archive(
+    name = "aspect_rules_js",
+    sha256 = "e3e6c3d42491e2938f4239a3d04259a58adc83e21e352346ad4ef62f87e76125",
+    strip_prefix = "rules_js-1.30.0",
+    url = "https://github.com/aspect-build/rules_js/releases/download/v1.30.0/rules_js-v1.30.0.tar.gz",
+)
+
+http_archive(
+    name = "aspect_rules_jest",
+    sha256 = "098186ffc450f2a604843d8ba14217088a0e259ea6a03294af5360a7f1bcd3e8",
+    strip_prefix = "rules_jest-0.19.5",
+    url = "https://github.com/aspect-build/rules_jest/releases/download/v0.19.5/rules_jest-v0.19.5.tar.gz",
+)
+
+http_archive(
+    name = "aspect_rules_ts",
+    sha256 = "4c3f34fff9f96ffc9c26635d8235a32a23a6797324486c7d23c1dfa477e8b451",
+    strip_prefix = "rules_ts-1.4.5",
+    url = "https://github.com/aspect-build/rules_ts/releases/download/v1.4.5/rules_ts-v1.4.5.tar.gz",
+)
+
+load("@aspect_rules_jest//jest:dependencies.bzl", "rules_jest_dependencies")
+rules_jest_dependencies()
+
+load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
+
+rules_js_dependencies()
+
+
+# load("@aspect_rules_js//js:toolchains.bzl", "DEFAULT_NODE_VERSION", "rules_js_register_toolchains")
+
+# rules_js_register_toolchains(node_version = DEFAULT_NODE_VERSION)
+
+load("@rules_nodejs//nodejs:repositories.bzl", "DEFAULT_NODE_VERSION", "nodejs_register_toolchains")
+
+nodejs_register_toolchains(
+    name = "nodejs",
+    node_version = DEFAULT_NODE_VERSION,
+)
+
+load("@aspect_rules_js//npm:repositories.bzl", "pnpm_repository", "npm_translate_lock")
+
+pnpm_repository(
+    name = "pnpm",
+ 
+    )
+
+npm_translate_lock(
+    name = "npm",
+    #npmrc = "//:.npmrc",
+    pnpm_lock = "//:pnpm-lock.yaml",
+    verify_node_modules_ignored = "//:.bazelignore",
+)
+
+load("@npm//:repositories.bzl", "npm_repositories")
+
+npm_repositories()
+
+
+load("@aspect_rules_ts//ts:repositories.bzl", "rules_ts_dependencies")
+
+rules_ts_dependencies(
+    # This keeps the TypeScript version in-sync with the editor, which is typically best.
+    ts_version_from = "//:package.json",
+)
+
+
+### DOCKER
+
+http_archive(
+    name = "rules_oci",
+    sha256 = "46ce9edcff4d3d7b3a550774b82396c0fa619cc9ce9da00c1b09a08b45ea5a14",
+    strip_prefix = "rules_oci-1.8.0",
+    url = "https://github.com/bazel-contrib/rules_oci/releases/download/v1.8.0/rules_oci-v1.8.0.tar.gz",
+)
+
+
+
+load("@rules_oci//oci:dependencies.bzl", "rules_oci_dependencies")
+
+rules_oci_dependencies()
+
+load("@rules_oci//oci:repositories.bzl", "LATEST_CRANE_VERSION", "oci_register_toolchains")
+
+oci_register_toolchains(
+    name = "oci",
+    crane_version = LATEST_CRANE_VERSION,
+    # Uncommenting the zot toolchain will cause it to be used instead of crane for some tasks.
+    # Note that it does not support docker-format images.
+    # zot_version = LATEST_ZOT_VERSION,
+)
+
+# Optional, for oci_tarball rule
+# load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+
+# rules_pkg_dependencies()
+
+
+# You can pull your base images using oci_pull like this:
+load("@rules_oci//oci:pull.bzl", "oci_pull")
+
+oci_pull(
+    name = "distroless_base",
+    digest = "sha256:ccaef5ee2f1850270d453fdf700a5392534f8d1a8ca2acda391fbb6a06b81c86",
+    image = "gcr.io/distroless/base",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+    ],
+)
+
+oci_pull(
+    name = "debian_base",
+    digest = "sha256:3d868b5eb908155f3784317b3dda2941df87bbbbaa4608f84881de66d9bb297b",
+    image = "debian",
+    platforms = ["linux/amd64",],
+)

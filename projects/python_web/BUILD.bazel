@@ -1,12 +1,18 @@
 
 load("@python_deps//:requirements.bzl", "requirement")
 
-py_binary(
-    name = "main",
-    srcs = ["main.py"],
+py_library(
+    name = "python_web_lib",
+    srcs = ["python_web.py"],
     deps = [
-        "//projects/python_calculator:calculator",  # a py_library
-        requirement("Flask")
-    ]
+        requirement("Flask"),
+        "//projects/python_calculator:calculator",
+    ],
 )
 
+py_binary(
+    name = "python_web",
+    srcs = ["python_web.py"],
+    main = "python_web.py",
+    deps = [":python_web_lib"],
+)
